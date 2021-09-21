@@ -15,7 +15,7 @@ proc term_set_raw {} {
 }
 
 proc term_unset_raw {} {
-	exec /bin/stty -raw echo <@stdin
+	exec /bin/stty -raw echo pass8 <@stdin
 }
 
 # pos is a 0 based position from a line start.
