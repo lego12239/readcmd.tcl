@@ -4,6 +4,7 @@
 #set F [open /dev/pts/0 w]
 
 namespace eval readcmd {
+variable stty_bin "/bin/stty"
 variable kbindings [dict create]
 
 
@@ -11,11 +12,11 @@ variable kbindings [dict create]
 # TERMINAL UTILS
 ######################################################################
 proc term_set_raw {} {
-	exec /bin/stty raw -echo <@stdin
+	exec [set [namespace current]::stty_bin] raw -echo <@stdin
 }
 
 proc term_unset_raw {} {
-	exec /bin/stty -raw echo pass8 <@stdin
+	exec [set [namespace current]::stty_bin] -raw echo pass8 <@stdin
 }
 
 # pos is a 0 based position from a line start.
