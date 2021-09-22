@@ -1,4 +1,4 @@
-#!/usr/bin/tclsh
+package provide readcmd 0.9
 
 # for debug output
 #set F [open /dev/pts/0 w]
