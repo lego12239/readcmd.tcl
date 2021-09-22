@@ -11,12 +11,26 @@ variable kbindings [dict create]
 ######################################################################
 # TERMINAL UTILS
 ######################################################################
+# Turn on a raw mode for an input stream
+# Current terminal settings is returned to caller. This data can be
+# passed to term_unset_raw proc.
 proc term_set_raw {} {
+	set term_prms [exec stty --save <@stdin]
 	exec [set [namespace current]::stty_bin] raw -echo <@stdin
+	return $term_prms
 }
 
-proc term_unset_raw {} {
-	exec [set [namespace current]::stty_bin] -raw echo pass8 <@stdin
+# Turn off a raw mode for an input stream
+#  prms  - a saved terminal settings that are returned from term_set_raw call
+#
+# If there is no prms argument, then try to unset raw mode.
+# Otherwise, configure a terminal to saved settings.
+proc term_unset_raw {{prms ""}} {
+	if {$prms ne ""} {
+		exec stty $prms <@stdin
+	} else {
+		exec [set [namespace current]::stty_bin] -raw echo pass8 <@stdin
+	}
 }
 
 # pos is a 0 based position from a line start.
