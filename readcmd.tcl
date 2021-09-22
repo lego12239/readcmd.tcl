@@ -15,7 +15,7 @@ variable kbindings [dict create]
 # Current terminal settings is returned to caller. This data can be
 # passed to term_unset_raw proc.
 proc term_set_raw {} {
-	set term_prms [exec stty --save <@stdin]
+	set term_prms [term_get_prms]
 	exec [set [namespace current]::stty_bin] raw -echo <@stdin
 	return $term_prms
 }
@@ -27,10 +27,21 @@ proc term_set_raw {} {
 # Otherwise, configure a terminal to saved settings.
 proc term_unset_raw {{prms ""}} {
 	if {$prms ne ""} {
-		exec stty $prms <@stdin
+		term_set_prms $prms
 	} else {
 		exec [set [namespace current]::stty_bin] -raw echo pass8 <@stdin
 	}
+}
+
+# Get current terminal settings.
+proc term_get_prms {} {
+	return [exec stty --save <@stdin]
+}
+
+# Set terminal settings to specified one.
+#  prms  - a term_get_prms return value
+proc term_set_prms {prms} {
+	exec stty $prms <@stdin
 }
 
 # pos is a 0 based position from a line start.
