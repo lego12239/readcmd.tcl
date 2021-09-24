@@ -627,7 +627,7 @@ proc rcmd_autocomplete {cmd cmds} {
 	set cmd_hpath ""
 	# word to complete
 	set wtc ""
-	set cmdheir ""
+	set cmdhier ""
 	set wc ""
 	set wl [list]
 
