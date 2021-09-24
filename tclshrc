@@ -1,15 +1,14 @@
-set hist_fname "~/.tclsh_history"
-set hist_size 1000
+# To change settings go to bottom
 
 proc cmd_loop {} {
 	set cmds_hist ""
 	set cmds ""
 	set is_running 1
 	global hist_fname
-
-	set sandbox [interp create]
+	global sandbox
 
 	set cmds_hist [cmd_hist_load $hist_fname]
+	set cmds [dict create _acl_hdlr ::autocomp]
 
 	set term_prms_orig [readcmd::term_set_raw]
 	set term_prms_raw [readcmd::term_get_prms]
@@ -80,9 +79,33 @@ proc cmd_hist_entry_unescape {entry} {
 	return [string map {%% % \\n \n \\\\ \\} $entry]
 }
 
+proc autocomp {prms} {
+	set ret [dict create]
+	global sandbox
+
+	if {[llength $prms] == 0} {
+		foreach i [$sandbox eval {info commands}] {
+			dict set ret $i ""
+		}
+		foreach i [$sandbox eval {namespace children}] {
+			dict set ret $i ""
+		}
+	}
+
+	return $ret
+}
+
+######################################################################
+# MAIN
+######################################################################
 if {$::tcl_interactive} {
+	set hist_fname "~/.tclsh_history"
+	set hist_size 1000
+
 	lappend auto_path ~/work/libs/tcl
 	package require readcmd
+
+	set sandbox [interp create]
 
 	cmd_loop
 	exit
