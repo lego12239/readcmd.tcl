@@ -1,0 +1,89 @@
+set hist_fname "~/.tclsh_history"
+set hist_size 1000
+
+proc cmd_loop {} {
+	set cmds_hist ""
+	set cmds ""
+	set is_running 1
+	global hist_fname
+
+	set sandbox [interp create]
+
+	set cmds_hist [cmd_hist_load $hist_fname]
+
+	set term_prms_orig [readcmd::term_set_raw]
+	set term_prms_raw [readcmd::term_get_prms]
+
+	while {$is_running} {
+		set cmd [readcmd::read_sync $readcmd::kbindings "TCL> " "exit" $cmds_hist $cmds]
+		puts ""
+		if {($cmd ne "") && ($cmd ne "exit")} {
+			lappend cmds_hist $cmd
+		}
+		if {$cmd eq "exit"} {
+			set is_running 0
+		} else {
+			readcmd::term_set_prms $term_prms_orig
+			if {[catch {$sandbox eval $cmd} res]} {
+				puts $::errorInfo
+			} else {
+				if {$res ne ""} {
+					puts $res
+				}
+			}
+			readcmd::term_set_prms $term_prms_raw
+		}
+
+	}
+
+	readcmd::term_unset_raw $term_prms_orig
+
+	cmd_hist_save $cmds_hist $hist_fname
+}
+
+proc cmd_hist_save {hist fname} {
+	global hist_size
+	set cnt [llength $hist]
+
+	set i [expr {$cnt - $hist_size}]
+	if {$i < 0} {
+		set i 0
+	}
+	set fh [open $fname w]
+	for {} {$i < $cnt} {incr i} {
+		puts $fh [cmd_hist_entry_escape [lindex $hist $i]]
+	}
+	close $fh
+}
+
+proc cmd_hist_load {fname} {
+	set hist [list]
+
+	try {
+		set fh [open $fname r]
+	} trap {POSIX ENOENT} {} {
+		return $hist
+	}
+	while {[gets $fh line] >= 0} {
+		lappend hist [cmd_hist_entry_unescape $line]
+	}
+	close $fh
+
+	return $hist
+}
+
+proc cmd_hist_entry_escape {entry} {
+	return [string map {% %% \n \\n \\ \\\\} $entry]
+}
+
+proc cmd_hist_entry_unescape {entry} {
+	return [string map {%% % \\n \n \\\\ \\} $entry]
+}
+
+if {$::tcl_interactive} {
+	lappend auto_path ~/work/libs/tcl
+	package require readcmd
+
+	cmd_loop
+	exit
+}
