@@ -642,29 +642,28 @@ proc rcmd_autocomplete {cmd cmds} {
 	}
 
 	# Get needed cmd hierarchy according to cmd_hpath
-	if {[llength $cmd_hpath] == 0} {
-		set cmdhier [dict get $cmds]
-	} else {
-		if {[dict exists $cmds {*}$cmd_hpath]} {
-			if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-				set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr] ""]
-			} else {
-				set cmdhier [dict get $cmds {*}$cmd_hpath]
-			}
+	if {([llength $cmd_hpath] == 0) ||
+	    ([dict exists $cmds {*}$cmd_hpath])} {
+		if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
+			set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr] ""]
 		} else {
-			# May be we will find a handler for getting a completion list?
-			# This is suitable for commands with parameters.
-			for {set n [expr {[llength $cmd_hpath] - 1}]} {$n >= 0} {incr n -1} {
-				set tmp_hpath [lrange $cmd_hpath 0 end-$n]
-				if {[dict exists $cmds {*}$tmp_hpath _acl_hdlr]} {
-					set cmdhier [[dict get $cmds {*}$tmp_hpath _acl_hdlr] \
-					  [lrange $cmd_hpath end-[expr {$n - 1}] end]]
-					break
-				}
+			set cmdhier [dict get $cmds {*}$cmd_hpath]
+		}
+	} else {
+		# May be we will find a handler for getting a completion list?
+		# This is suitable for commands with parameters.
+		set cmd_prms [list]
+		for {set n [llength $cmd_hpath]} {$n >= 0} {incr n -1} {
+			if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
+				set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr]\
+				  $cmd_prms]
+				break
 			}
-			if {[dict size $cmdhier] == 0} {
-				return [list "" {}]
-			}
+			set cmd_prms [linsert $cmd_prms 0 [lindex $cmd_hpath end]]
+			set cmd_hpath [lrange $cmd_hpath 0 end-1]
+		}
+		if {[dict size $cmdhier] == 0} {
+			return [list "" {}]
 		}
 	}
 
