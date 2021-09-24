@@ -8,8 +8,11 @@
 6. add chan arg to term_set_raw and term_unset_raw?
 7. add read_async proc
 10. tclshrc: add autocompletion
-11. tclshrc: add history saving/loading
 12. add multiline support
 13. add key sequence support(e.g. ctrl-x + tab to insert tab)
 14. add chan arg to read_sync?
 15. improve README
+16. tclshrc: create second variant of tclshrc where external commands(from OS, like ls, mkdir, etc) will work
+17. tclshrc: add interp alias for history command that list previous commands
+18. tclshrc: add support for call previous command with bash-like syntax !CMD_INDEX
+19. tclshrc: add support for ctrl-r/ctrl-s to search history backward/forward
