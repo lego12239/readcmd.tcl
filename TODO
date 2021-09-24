@@ -1,0 +1,15 @@
+1. add entered command to command history automatically(in read_sync proc)?
+2. reorder args for read_sync proc; may be: prompt, histo, cmds, exit_cmd, kbindings
+3. add reading a conf for readcmd lib($::env(HOME)/.readcmdrc)? I think, just one thing
+  need to be placed there - a configuration of readcmd::kbindings. Everything else should
+  be placed in a config of a program that use readcmd lib
+4. place stty path to conf?
+5. place debug switch into conf?
+6. add chan arg to term_set_raw and term_unset_raw?
+7. add read_async proc
+10. tclshrc: add autocompletion
+11. tclshrc: add history saving/loading
+12. add multiline support
+13. add key sequence support(e.g. ctrl-x + tab to insert tab)
+14. add chan arg to read_sync?
+15. improve README
