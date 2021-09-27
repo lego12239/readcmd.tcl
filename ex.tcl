@@ -41,16 +41,43 @@ dict set cmds echo _descr "print specified arguments"
 # COMMAND: say
 ######################################################################
 proc say {args} {
+	if {[dict exists $args to]} {
+		set to [dict get $args to]
+	} else {
+		set to "everybody"
+	}
+	if {![dict exists $args msg]} {
+		return
+	}
+	puts "[dict get $args msg], [dict get $args to]!"
 }
 
-proc say_acl {prms} {
-	if {[llength $prms] == 0} {
-		return [dict create \
-		  "<IP>" [dict create _descr "Box external IP"]\
-		  "" ""]
+proc say_acl {prms wtc} {
+	set ret [dict create \
+	  "to" [dict create \
+	    _descr "to whom say"\
+	    "<PERSON>" [dict create _descr "to whom say"]\
+	    "" ""]\
+	  "msg" [dict create \
+	    _descr "what to say"\
+	    "<MESSAGE>" [dict create _descr "what to say"]\
+	    "" ""]]
+
+	set i 0
+	while {$i < [llength $prms]} {
+		set p [lindex $prms $i]
+		if {![dict exists $ret $p]} {
+			return ""
+		}
+		incr i 2
+		if {$i > [llength $prms]} {
+			set ret [dict get $ret $p]
+		} else {
+			set ret [dict remove $ret $p]
+		}
 	}
 
-	return ""
+	return $ret
 }
 dict set cmds say _ ::say
 dict set cmds say _descr "say some message to somebody"
