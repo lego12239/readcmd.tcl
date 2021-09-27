@@ -80,10 +80,12 @@ proc cmd_hist_entry_unescape {entry} {
 	return [string map {%% % \\n \n \\\\ \\} $entry]
 }
 
-proc autocomp {prms} {
+proc autocomp {prms wtc} {
 	set ret [dict create]
+	set state 0
 	global sandbox
 
+	if {0} {
 	if {[llength $prms] == 0} {
 		foreach i [$sandbox eval {info commands}] {
 			dict set ret $i ""
@@ -91,6 +93,26 @@ proc autocomp {prms} {
 		foreach i [$sandbox eval {namespace children}] {
 			dict set ret $i ""
 		}
+	}
+	}
+
+	set idx [string length $wtc]
+	incr idx -1
+	for {} {($idx >= 0) && ($state < 100)} {incr idx -1} {
+		switch [string index $wtc $idx] {
+		"$" {
+			set state 100
+			break
+		}
+		}
+	}
+
+	switch $state {
+	100 {
+		foreach i [$sandbox eval "info vars [string range $wtc ${idx}+1 end]*"] {
+			dict set ret [string range $wtc 0 $idx]$i ""
+		}
+	}
 	}
 
 	return $ret
