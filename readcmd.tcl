@@ -651,7 +651,7 @@ proc rcmd_autocomplete {cmd cmds} {
 	if {([llength $cmd_hpath] == 0) ||
 	    ([dict exists $cmds {*}$cmd_hpath])} {
 		if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-			set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr] ""]
+			set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr] "" $wtc]
 		} else {
 			set cmdhier [dict get $cmds {*}$cmd_hpath]
 		}
@@ -662,7 +662,7 @@ proc rcmd_autocomplete {cmd cmds} {
 		for {set n [llength $cmd_hpath]} {$n >= 0} {incr n -1} {
 			if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
 				set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr]\
-				  $cmd_prms]
+				  $cmd_prms $wtc]
 				break
 			}
 			set cmd_prms [linsert $cmd_prms 0 [lindex $cmd_hpath end]]
