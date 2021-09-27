@@ -1,3 +1,9 @@
+# A command line editing library.
+# Copyright (C) 2021 Oleg O. Nemanov <lego12239@yandex.ru>
+# Made for Z-Wave.Me project.
+#
+# This code is licensed under BSD 2-clause license.
+
 package provide readcmd 0.9
 
 # for debug output
