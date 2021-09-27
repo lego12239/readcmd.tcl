@@ -679,6 +679,7 @@ proc rcmd_autocomplete {cmd cmds} {
 		}
 		lappend wl $wl_item
 	}
+	set wl [lsort -index 0 $wl]
 
 
 	# Get autocompletion for uncompleted word
