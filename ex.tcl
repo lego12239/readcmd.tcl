@@ -35,6 +35,10 @@ proc cmd_echo {args} {
 }
 dict set cmds echo _ ::mod_echo::cmd_echo
 dict set cmds echo _descr "print specified arguments"
+dict set cmds echO _ ::mod_echo::cmd_echo
+dict set cmds echO _descr "print specified arguments"
+dict set cmds echoTheSame _ ::mod_echo::cmd_echo
+dict set cmds echoTheSame _descr "print specified arguments"
 
 
 ######################################################################
