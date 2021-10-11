@@ -632,28 +632,32 @@ proc rcmd_get_cseq {} {
 proc rcmd_autocomplete {cmd cmds} {
 	set cmd_hpath ""
 	# word to complete
-	set wtc ""
-	set cmdhier ""
+	set ttc ""
 	set wc ""
 	set wl [list]
 
-	# Separate completed words from uncompleted one
+	# Separate completed tokens from uncompleted one
 	# After this:
-	#   wtc will contain uncompleted word;
+	#   ttc will contain uncompleted token(actually it can be completed token,
+	#       but cursor is right after it)
 	#   cmd_hpath will be list with completed words
-	set cmd_hpath [_split $cmd]
-	if {[string index $cmd end] ne " "} {
-		set wtc [lindex $cmd_hpath end]
-		set cmd_hpath [lrange $cmd_hpath 0 end-1]
+	set m [regexp -indices -inline -all {[^[\s]+} $cmd]
+	if {[lindex $m end 1] == [expr {[string length $cmd] - 1}]} {
+		set ttc [string range $cmd [lindex $m end 0] [lindex $m end 1]]
+		set m [lrange $m 0 end-1]
+	}
+	foreach e $m {
+		lappend cmd_hpath [string range $cmd [lindex $e 0] [lindex $e 1]]
 	}
 
 	# Get needed cmd hierarchy according to cmd_hpath
 	if {([llength $cmd_hpath] == 0) ||
 	    ([dict exists $cmds {*}$cmd_hpath])} {
 		if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-			set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr] "" $wtc]
+			set wl [[dict get $cmds {*}$cmd_hpath _acl_hdlr] "" $ttc]
 		} else {
-			set cmdhier [dict get $cmds {*}$cmd_hpath]
+			set wl [_acl_gen_from_dict [dict get $cmds {*}$cmd_hpath] $ttc]
+			set wl [lsort -index 0 $wl]
 		}
 	} else {
 		# May be we will find a handler for getting a completion list?
@@ -661,20 +665,53 @@ proc rcmd_autocomplete {cmd cmds} {
 		set cmd_prms [list]
 		for {set n [llength $cmd_hpath]} {$n >= 0} {incr n -1} {
 			if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-				set cmdhier [[dict get $cmds {*}$cmd_hpath _acl_hdlr]\
-				  $cmd_prms $wtc]
+				set wl [[dict get $cmds {*}$cmd_hpath _acl_hdlr]\
+				  $cmd_prms $ttc]
 				break
 			}
 			set cmd_prms [linsert $cmd_prms 0 [lindex $cmd_hpath end]]
 			set cmd_hpath [lrange $cmd_hpath 0 end-1]
 		}
-		if {[dict size $cmdhier] == 0} {
-			return [list "" {}]
-		}
+	}
+	if {[llength $wl] == 0} {
+		return [list "" {}]
 	}
 
-	# Get autocompletion words list excluding keys started with "_"
-	foreach wl_item [dict keys $cmdhier "${wtc}*"] {
+	# Get autocompletion for uncompleted word
+	if {[llength $wl] == 0} {
+		# wrong uncompleted word
+		return [list "" {}]
+	} elseif {[llength $wl] == 1} {
+		# just 1 variant of possible completion
+		return [list "[string range [lindex [lindex $wl 0] 0] [string length $ttc] end] " {}]
+	}
+
+	set wc [lindex [lindex $wl 0] 0]
+	set wc_len [string length $wc]
+	set wl_len [llength $wl]
+	for {set idx 0} {$idx < $wc_len} {incr idx} {
+		for {set i 1} {$i < $wl_len} {incr i} {
+			if {[string index $wc $idx] ne [string index [lindex $wl $i 0] $idx]} {
+				break
+			}
+		}
+		if {$i != $wl_len} {
+			break
+		}
+	}
+	set wc [string range $wc 0 $idx-1]
+
+	if {[string equal -length [string length $ttc] $ttc $wc]} {
+		set wc [string range $wc [string length $ttc] end]
+	}
+
+	return [list $wc $wl]
+}
+
+proc _acl_gen_from_dict {cmdhier ttc} {
+	set wl ""
+
+	foreach wl_item [dict keys $cmdhier "${ttc}*"] {
 		if {[string index $wl_item 0] eq "_"} {
 			continue
 		}
@@ -685,33 +722,7 @@ proc rcmd_autocomplete {cmd cmds} {
 		}
 		lappend wl $wl_item
 	}
-	set wl [lsort -index 0 $wl]
-
-
-	# Get autocompletion for uncompleted word
-	if {[llength $wl] == 0} {
-		# wrong uncompleted word
-		return [list "" {}]
-	} elseif {[llength $wl] == 1} {
-		# just 1 variant of possible completion
-		return [list "[string range [lindex [lindex $wl 0] 0] [string length $wtc] end] " {}]
-	}
-
-	set wtc_len [string length $wtc]
-	set wc [string range [lindex [lindex $wl 0] 0] $wtc_len end]
-	foreach w $wl {
-		for {set i 0} {[string index $wc $i] ne ""} {incr i} {
-			if {[string index $wc $i] ne [string index [lindex $w 0] ${wtc_len}+$i]} {
-				set wc [string range $wc 0 ${i}-1]
-				break
-			}
-		}
-		if {$wc eq ""} {
-			break
-		}
-	}
-
-	return [list $wc $wl]
+	return $wl
 }
 
 proc _split {str} {
