@@ -127,7 +127,7 @@ proc term_clean_screen {_tinfo} {
 ######################################################################
 # CLI INPUT/OUTPUT
 #######################################################
-proc rcmd_char_rm_prevchar {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_char_rm_prevchar {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -143,7 +143,7 @@ proc rcmd_char_rm_prevchar {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_char_rm_curchar {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_char_rm_curchar {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -160,7 +160,7 @@ proc rcmd_char_rm_curchar {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_cur_move_nextchar {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_nextchar {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -173,7 +173,7 @@ proc rcmd_cur_move_nextchar {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_cur_move_prevchar {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_prevchar {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -186,7 +186,7 @@ proc rcmd_cur_move_prevchar {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_cur_move_atstart {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_atstart {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -197,7 +197,7 @@ proc rcmd_cur_move_atstart {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_cur_move_atend {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_atend {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -208,65 +208,64 @@ proc rcmd_cur_move_atend {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_term_key {_cmd _len _cpos _tinfo data} {
+proc rcmd_term_key {_cmd _len _cpos tok_rex _tinfo data} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
 	upvar $_tinfo tinfo
 
 	if {$data eq "3"} {
-		rcmd_char_rm_curchar cmd len cpos tinfo
+		rcmd_char_rm_curchar cmd len cpos $tok_rex tinfo
 	}
 	return 0
 }
 
-proc rcmd_cur_move_prevword {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_prevword {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
 	upvar $_tinfo tinfo
 
-	while {$cpos != 0} {
-		incr cpos -1
-		if {([string index $cmd $cpos] ne " ") &&
-		    ($cpos > 0) && ([string index $cmd ${cpos}-1] eq " ")} {
-			break
-		}
+	set m [regexp -indices -inline -all $tok_rex [string range $cmd 0 $cpos-1]]
+	if {[llength $m] > 0} {
+		set cpos [lindex $m end 0]
+	} else {
+		set cpos 0
 	}
 	term_curpos_set tinfo $cpos
 	return 0
 }
 
-proc rcmd_cur_move_nextword {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_cur_move_nextword {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
 	upvar $_tinfo tinfo
 
-	while {$cpos != $len} {
+	set m [regexp -indices -inline -all $tok_rex [string range $cmd $cpos end]]
+#	dbg_out $m
+	if {[llength $m] > 0} {
+		incr cpos [lindex $m 0 1]
 		incr cpos
-		if {([string index $cmd $cpos] eq " ") &&
-		    ([string index $cmd ${cpos}-1] ne " ")} {
-			break
-		}
+	} else {
+		set cpos $len
 	}
 	term_curpos_set tinfo $cpos
 	return 0
 }
 
-proc rcmd_word_rm_prev {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_word_rm_prev {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
 	upvar $_tinfo tinfo
 
 	set epos $cpos
-	while {$cpos != 0} {
-		incr cpos -1
-		if {([string index $cmd $cpos] ne " ") &&
-		    ($cpos > 0) && ([string index $cmd ${cpos}-1] eq " ")} {
-			break
-		}
+	set m [regexp -indices -inline -all $tok_rex [string range $cmd 0 $cpos-1]]
+	if {[llength $m] > 0} {
+		set cpos [lindex $m end 0]
+	} else {
+		set cpos 0
 	}
 
 	if {$epos != $cpos} {
@@ -279,19 +278,19 @@ proc rcmd_word_rm_prev {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_word_rm_cur {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_word_rm_cur {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
 	upvar $_tinfo tinfo
 
 	set epos $cpos
-	while {$epos != $len} {
+	set m [regexp -indices -inline -all $tok_rex [string range $cmd $cpos end]]
+	if {[llength $m] > 0} {
+		incr epos [lindex $m 0 1]
 		incr epos
-		if {([string index $cmd $epos] eq " ") &&
-		    ([string index $cmd ${epos}-1] ne " ")} {
-			break
-		}
+	} else {
+		set epos $len
 	}
 
 	if {$epos != $cpos} {
@@ -303,7 +302,7 @@ proc rcmd_word_rm_cur {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_str_rm_tail {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_str_rm_tail {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -316,7 +315,7 @@ proc rcmd_str_rm_tail {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_str_rm_head {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_str_rm_head {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_cmd cmd
 	upvar $_len len
 	upvar $_cpos cpos
@@ -333,30 +332,30 @@ proc rcmd_str_rm_head {_cmd _len _cpos _tinfo {data ""}} {
 	return 0
 }
 
-proc rcmd_str_accept {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_str_accept {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	return 1
 }
 
-proc rcmd_str_cancel {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_str_cancel {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	return 2
 }
 
-proc rcmd_scrn_clean {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_scrn_clean {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	upvar $_tinfo tinfo
 
 	term_clean_screen tinfo
 	return 4
 }
 
-proc rcmd_histo_prev {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_histo_prev {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	return 5
 }
 
-proc rcmd_histo_next {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_histo_next {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	return 6
 }
 
-proc rcmd_word_autocomplete {_cmd _len _cpos _tinfo {data ""}} {
+proc rcmd_word_autocomplete {_cmd _len _cpos tok_rex _tinfo {data ""}} {
 	return 7
 }
 
@@ -420,7 +419,7 @@ dict set kbindings "\x09" [namespace current]::rcmd_word_autocomplete
 #  5 - edit prev command from histo
 #  6 - edit next command from histo
 #  7 - autocomplete current command word
-proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {histo ""} {cmds ""}} {
+proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {tok_rex {\[|[^[\s]+}} {histo ""} {cmds ""}} {
 	set input [list]
 	set csiseq_data ""
 	set cmd ""
@@ -499,7 +498,7 @@ proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {histo ""} {cmds ""}} 
 		3 -
 		4 {
 			if {[dict exists $kbindings $cseq]} {
-				set ret [[dict get $kbindings $cseq] cmd cmd_len cpos terminfo $csiseq_data]
+				set ret [[dict get $kbindings $cseq] cmd cmd_len cpos $tok_rex terminfo $csiseq_data]
 				switch $ret {
 				0 {
 				}
@@ -540,7 +539,8 @@ proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {histo ""} {cmds ""}} 
 					}
 				}
 				7 {
-					lassign [rcmd_autocomplete [string range $cmd 0 ${cpos}-1] $cmds] acw acl
+					lassign [rcmd_autocomplete [string range $cmd 0 ${cpos}-1] \
+					  $tok_rex $cmds] acw acl
 					if {[llength $acl]} {
 						puts ""
 						foreach i $acl {
@@ -629,7 +629,7 @@ proc rcmd_get_cseq {} {
 	return [list $cseq $csiseq_data]
 }
 
-proc rcmd_autocomplete {cmd cmds} {
+proc rcmd_autocomplete {cmd tok_rex cmds} {
 	set cmd_hpath ""
 	# word to complete
 	set ttc ""
@@ -641,7 +641,7 @@ proc rcmd_autocomplete {cmd cmds} {
 	#   ttc will contain uncompleted token(actually it can be completed token,
 	#       but cursor is right after it)
 	#   cmd_hpath will be list with completed words
-	set m [regexp -indices -inline -all {[^[\s]+} $cmd]
+	set m [regexp -indices -inline -all $tok_rex $cmd]
 	if {[lindex $m end 1] == [expr {[string length $cmd] - 1}]} {
 		set ttc [string range $cmd [lindex $m end 0] [lindex $m end 1]]
 		set m [lrange $m 0 end-1]
