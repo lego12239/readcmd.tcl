@@ -701,7 +701,7 @@ proc rcmd_autocomplete {cmd tok_rex cmds} {
 		return [list "" {}]
 	} elseif {[llength $wl] == 1} {
 		# just 1 variant of possible completion
-		return [list "[string range [lindex [lindex $wl 0] 0] [string length $ttc] end] " {}]
+		return [list "[string range [lindex [lindex $wl 0] 0] [string length $ttc] end]" {}]
 	}
 
 	set wc [lindex [lindex $wl 0] 0]
@@ -735,9 +735,9 @@ proc _acl_gen_from_dict {cmdhier ttc} {
 			continue
 		}
 		if {[dict exists $cmdhier $wl_item _descr]} {
-			set wl_item [list $wl_item [dict get $cmdhier $wl_item _descr]]
+			set wl_item [list "$wl_item " [dict get $cmdhier $wl_item _descr]]
 		} else {
-			set wl_item [list $wl_item ""]
+			set wl_item [list "$wl_item " ""]
 		}
 		lappend wl $wl_item
 	}
