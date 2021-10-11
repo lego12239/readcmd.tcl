@@ -1,4 +1,3 @@
-1. add entered command to command history automatically(in read_sync proc)?
 2. reorder args for read_sync proc; may be: prompt, histo, cmds, exit_cmd, kbindings
 3. add reading a conf for readcmd lib($::env(HOME)/.readcmdrc)? I think, just one thing
   need to be placed there - a configuration of readcmd::kbindings. Everything else should
@@ -7,7 +6,6 @@
 5. place debug switch into conf?
 6. add chan arg to term_set_raw and term_unset_raw?
 7. add read_async proc
-10. tclshrc: add autocompletion for variables and commands after [
 12. add multiline support
 13. add key sequence support(e.g. ctrl-x + tab to insert tab)
 14. add chan arg to read_sync?
@@ -16,8 +14,10 @@
 17. tclshrc: add interp alias for history command that list previous commands
 18. tclshrc: add support for call previous command with bash-like syntax !CMD_INDEX
 19. tclshrc: add support for ctrl-r/ctrl-s to search history backward/forward
-20. add support of specifying additional stop charater for alt-b/alt-f/alt-backspace/...
-      E.g. colon or/and ][ in addition to space.
 21. add callback to output autocompletion item (which will be by default: puts [format "%-20s %s" [lindex $i 0] [lindex $i 1]])? Callback must accept as arguments an item, an item
   description and terminal width in chars(this can help output items in several columns).
 22. allow _acl_hdlr contain not only proc name, but proc args too.
+23. term_unset_raw(): do term_set_prms if $prms is not empty and after this do
+  stty -raw echo pass8?
+24. rework autocompletion. We can't use _descr, _ and _acl_hdlr, because, for example,
+  in tclshrc variables can start with _ char and we should handle they too.
