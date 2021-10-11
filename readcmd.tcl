@@ -6,13 +6,32 @@
 
 package provide readcmd 0.9
 
-# for debug output
-#set F [open /dev/pts/0 w]
-
 namespace eval readcmd {
+variable dbg_file ""
+variable dbg_chan ""
 variable stty_bin "/bin/stty"
 variable kbindings [dict create]
 
+
+######################################################################
+# DEBUG UTILS
+######################################################################
+proc dbg_init {fname} {
+	variable dbg_chan
+
+	if {$fname eq ""} {
+		proc [namespace current]::dbg_out {msg} {}
+		return
+	}
+	set dbg_chan [open $fname w]
+}
+
+proc dbg_out {msg} {
+	variable dbg_chan
+
+	puts $dbg_chan $msg
+	flush $dbg_chan
+}
 
 ######################################################################
 # TERMINAL UTILS
@@ -68,8 +87,7 @@ proc term_curpos_set {_tinfo pos} {
 	dict set tinfo cc $c
 	puts -nonewline "\x1b\[${r};${c}H"
 	flush stdout
-#	puts $::F "SET: rmax: [dict get $tinfo rmax], cmax: [dict get $tinfo cmax], r: $r, c: $c, scroll: $rscroll"
-##	flush $::F
+#	dbg_out "SET: rmax: [dict get $tinfo rmax], cmax: [dict get $tinfo cmax], r: $r, c: $c, scroll: $rscroll"
 }
 
 # DO NOT USE! UNFINISHED!
@@ -107,7 +125,7 @@ proc term_write_chars {_tinfo chars} {
 			dict incr tinfo rc -$rscroll
 		}
 	}
-#	puts $::F "WRITE: cc: [dict get $tinfo cc], len: [string length $chars], c: $c"
+#	dbg_out "WRITE: cc: [dict get $tinfo cc], len: [string length $chars], c: $c"
 	puts -nonewline "\x1b7\x1b\[J${chars}\x1b8"
 	flush stdout
 }
@@ -739,4 +757,6 @@ proc _str_insert {str pos text} {
 	}
 	return [string replace $str $pos $pos "$text[string index $str $pos]"]
 }
+
+dbg_init $dbg_file
 }
