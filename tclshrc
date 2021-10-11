@@ -15,7 +15,7 @@ proc cmd_loop {} {
 	set term_prms_raw [readcmd::term_get_prms]
 
 	while {$is_running} {
-		set cmd [readcmd::read_sync $readcmd::kbindings $prompt "exit" $cmds_hist $cmds]
+		set cmd [readcmd::read_sync $readcmd::kbindings $prompt "exit" {\[|\]|\$|[^][\$\s]+} $cmds_hist $cmds]
 		puts ""
 		if {($cmd ne "") && ($cmd ne "exit")} {
 			lappend cmds_hist $cmd
@@ -80,41 +80,43 @@ proc cmd_hist_entry_unescape {entry} {
 	return [string map {%% % \\n \n \\\\ \\} $entry]
 }
 
-proc autocomp {prms wtc} {
-	set ret [dict create]
+proc autocomp {toks ttc} {
+	set ret ""
 	set state 0
+	set pattern ""
 	global sandbox
 
-	if {0} {
-	if {[llength $prms] == 0} {
-		foreach i [$sandbox eval {info commands}] {
-			dict set ret $i ""
+	if {(([llength $toks] == 0) && ($ttc ne "\$")) ||
+	    ([lindex $toks end] eq "\[") ||
+	    ($ttc eq "\[")} {
+		if {$ttc ne "\["} {
+			set pattern [string map {* \\* ? \\? [ \\[ ] \\] \\ \\\\} $ttc]
 		}
-		foreach i [$sandbox eval {namespace children}] {
-			dict set ret $i ""
+		foreach i [lsort [$sandbox eval [list info commands "${pattern}*"]]] {
+			lappend ret [list "$i " ""]
 		}
-	}
-	}
-
-	set idx [string length $wtc]
-	incr idx -1
-	for {} {($idx >= 0) && ($state < 100)} {incr idx -1} {
-		switch [string index $wtc $idx] {
-		"$" {
-			set state 100
-			break
+	} elseif {([lindex $toks end] eq "\$") ||
+	          ($ttc eq "\$")} {
+		if {$ttc ne "\$"} {
+			set pattern [string map {* \\* ? \\? [ \\[ ] \\] \\ \\\\} $ttc]
 		}
+		foreach i [lsort [$sandbox eval [list info vars "${pattern}*"]]] {
+			lappend ret [list "$i " ""]
 		}
 	}
-
-	switch $state {
-	100 {
-		foreach i [$sandbox eval "info vars [string range $wtc ${idx}+1 end]*"] {
-			dict set ret [string range $wtc 0 $idx]$i ""
+	if {[string equal -length 2 :: $ttc]} {
+		set idx [string last : $ttc]
+		if {[string index $ttc $idx-1] eq ":"} {
+			set ns [string range $ttc 0 $idx]
+			set pattern [string range $ttc $idx+1 end]
+		} else {
+			set ns [string range $ttc 0 $idx-1]
+			set pattern [string range $ttc $idx+1 end]
+		}
+		foreach i [lsort [$sandbox eval [list namespace children $ns "${pattern}*"]]] {
+			lappend ret [list "${i}::" ""]
 		}
 	}
-	}
-
 	return $ret
 }
 
