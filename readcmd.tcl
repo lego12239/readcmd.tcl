@@ -711,6 +711,7 @@ proc rcmd_autocomplete {cmd tok_rex cmds} {
 proc _acl_gen_from_dict {cmdhier ttc} {
 	set wl ""
 
+	set ttc [string map {* \\* ? \\? [ \\[ ] \\] \\ \\\\} $ttc]
 	foreach wl_item [dict keys $cmdhier "${ttc}*"] {
 		if {[string index $wl_item 0] eq "_"} {
 			continue
