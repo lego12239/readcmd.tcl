@@ -56,7 +56,7 @@ proc say {args} {
 	puts "[dict get $args msg], [dict get $args to]!"
 }
 
-proc say_acl {prms wtc} {
+proc say_acl {toks ttc} {
 	set ret [dict create \
 	  "to" [dict create \
 	    _descr "to whom say"\
@@ -68,20 +68,20 @@ proc say_acl {prms wtc} {
 	    "" ""]]
 
 	set i 0
-	while {$i < [llength $prms]} {
-		set p [lindex $prms $i]
+	while {$i < [llength $toks]} {
+		set p [lindex $toks $i]
 		if {![dict exists $ret $p]} {
 			return ""
 		}
 		incr i 2
-		if {$i > [llength $prms]} {
+		if {$i > [llength $toks]} {
 			set ret [dict get $ret $p]
 		} else {
 			set ret [dict remove $ret $p]
 		}
 	}
 
-	return $ret
+	return [readcmd::_acl_gen_from_dict $ret $ttc]
 }
 dict set cmds say _ ::say
 dict set cmds say _descr "say some message to somebody"
@@ -114,7 +114,7 @@ proc split_cmd {cmd} {
 readcmd::term_set_raw
 
 while {$is_running} {
-	set cmd [readcmd::read_sync $readcmd::kbindings $PROMPT "exit" $cmds_histo $cmds]
+	set cmd [readcmd::read_sync $readcmd::kbindings $PROMPT "exit" {[^[\s]+} $cmds_histo $cmds]
 	puts ""
 	if {$cmd ne ""} {
 		lappend cmds_histo $cmd
