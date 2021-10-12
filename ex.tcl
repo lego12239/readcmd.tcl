@@ -114,7 +114,7 @@ proc split_cmd {cmd} {
 readcmd::term_set_raw
 
 while {$is_running} {
-	set cmd [readcmd::read_sync $readcmd::kbindings $PROMPT "exit" {[^[\s]+} $cmds_histo $cmds]
+	set cmd [readcmd::read_sync $PROMPT $cmds_histo $cmds]
 	puts ""
 	if {$cmd ne ""} {
 		lappend cmds_histo $cmd
