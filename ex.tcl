@@ -20,9 +20,9 @@ proc cmd_show_ver {args} {
 	puts "0.2"
 }
 }
-dict set cmds show _descr "show info"
-dict set cmds show version _ ::mod_version::cmd_show_ver
-dict set cmds show version _descr "show program version"
+dict set cmds show " " descr "show info"
+dict set cmds show version " " hdlr ::mod_version::cmd_show_ver
+dict set cmds show version " " descr "show program version"
 
 
 ######################################################################
@@ -33,12 +33,12 @@ proc cmd_echo {args} {
 	puts "[join $args]"
 }
 }
-dict set cmds echo _ ::mod_echo::cmd_echo
-dict set cmds echo _descr "print specified arguments"
-dict set cmds echO _ ::mod_echo::cmd_echo
-dict set cmds echO _descr "print specified arguments"
-dict set cmds echoTheSame _ ::mod_echo::cmd_echo
-dict set cmds echoTheSame _descr "print specified arguments"
+dict set cmds echo " " hdlr ::mod_echo::cmd_echo
+dict set cmds echo " " descr "print specified arguments"
+dict set cmds echO " " hdlr ::mod_echo::cmd_echo
+dict set cmds echO " " descr "print specified arguments"
+dict set cmds echoTheSame " " hdlr ::mod_echo::cmd_echo
+dict set cmds echoTheSame " " descr "print specified arguments"
 
 
 ######################################################################
@@ -59,12 +59,12 @@ proc say {args} {
 proc say_acl {toks ttc} {
 	set ret [dict create \
 	  "to" [dict create \
-	    _descr "to whom say"\
-	    "<PERSON>" [dict create _descr "to whom say"]\
+	    " " [dict create descr "to whom say"]\
+	    "<PERSON>" [dict create " " [dict create descr "to whom say"]]\
 	    "" ""]\
 	  "msg" [dict create \
-	    _descr "what to say"\
-	    "<MESSAGE>" [dict create _descr "what to say"]\
+	    " " [dict create descr "what to say"]\
+	    "<MESSAGE>" [dict create " " [dict create descr "what to say"]]\
 	    "" ""]]
 
 	set i 0
@@ -83,9 +83,9 @@ proc say_acl {toks ttc} {
 
 	return [readcmd::_acl_gen_from_dict $ret $ttc]
 }
-dict set cmds say _ ::say
-dict set cmds say _descr "say some message to somebody"
-dict set cmds say _acl_hdlr ::say_acl
+dict set cmds say " " hdlr ::say
+dict set cmds say " " descr "say some message to somebody"
+dict set cmds say " " acl_hdlr ::say_acl
 
 
 ######################################################################
@@ -96,9 +96,9 @@ proc split_cmd {cmd} {
 	set cmd_path $cmd
 
 	while {[llength $cmd_path] > 0} {
-		if {[dict exists $cmds {*}$cmd_path _]} {
+		if {[dict exists $cmds {*}$cmd_path " " hdlr]} {
 			return [list \
-			  [dict get $cmds {*}$cmd_path _]\
+			  [dict get $cmds {*}$cmd_path " " hdlr]\
 			  [lrange $cmd [llength $cmd_path] end]]
 		}
 		set cmd_path [lrange $cmd_path 0 end-1]
