@@ -671,8 +671,8 @@ proc rcmd_autocomplete {cmd tok_rex cmds} {
 	# Get needed cmd hierarchy according to cmd_hpath
 	if {([llength $cmd_hpath] == 0) ||
 	    ([dict exists $cmds {*}$cmd_hpath])} {
-		if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-			set wl [[dict get $cmds {*}$cmd_hpath _acl_hdlr] "" $ttc]
+		if {[dict exists $cmds {*}$cmd_hpath " " acl_hdlr]} {
+			set wl [[dict get $cmds {*}$cmd_hpath " " acl_hdlr] "" $ttc]
 		} else {
 			set wl [_acl_gen_from_dict [dict get $cmds {*}$cmd_hpath] $ttc]
 			set wl [lsort -index 0 $wl]
@@ -682,8 +682,8 @@ proc rcmd_autocomplete {cmd tok_rex cmds} {
 		# This is suitable for commands with parameters.
 		set cmd_prms [list]
 		for {set n [llength $cmd_hpath]} {$n >= 0} {incr n -1} {
-			if {[dict exists $cmds {*}$cmd_hpath _acl_hdlr]} {
-				set wl [[dict get $cmds {*}$cmd_hpath _acl_hdlr]\
+			if {[dict exists $cmds {*}$cmd_hpath " " acl_hdlr]} {
+				set wl [[dict get $cmds {*}$cmd_hpath " " acl_hdlr]\
 				  $cmd_prms $ttc]
 				break
 			}
@@ -731,11 +731,12 @@ proc _acl_gen_from_dict {cmdhier ttc} {
 
 	set ttc [string map {* \\* ? \\? [ \\[ ] \\] \\ \\\\} $ttc]
 	foreach wl_item [dict keys $cmdhier "${ttc}*"] {
-		if {[string index $wl_item 0] eq "_"} {
+		if {$wl_item eq " "} {
 			continue
 		}
-		if {[dict exists $cmdhier $wl_item _descr]} {
-			set wl_item [list "$wl_item " [dict get $cmdhier $wl_item _descr]]
+		if {[dict exists $cmdhier $wl_item " " descr]} {
+			set wl_item [list "$wl_item " \
+			  [dict get $cmdhier $wl_item " " descr]]
 		} else {
 			set wl_item [list "$wl_item " ""]
 		}
