@@ -15,7 +15,7 @@ proc cmd_loop {} {
 	set term_prms_raw [readcmd::term_get_prms]
 
 	while {$is_running} {
-		set cmd [readcmd::read_sync $readcmd::kbindings $prompt "exit" {\[|\]|\$|[^][\$\s]+} $cmds_hist $cmds]
+		set cmd [readcmd::read_sync $prompt $cmds_hist $cmds "exit" {\[|\]|\$|[^][\$\s]+}]
 		puts ""
 		if {($cmd ne "") && ($cmd ne "exit")} {
 			lappend cmds_hist $cmd
