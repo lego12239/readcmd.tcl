@@ -437,7 +437,7 @@ dict set kbindings "\x09" [namespace current]::rcmd_word_autocomplete
 #  5 - edit prev command from histo
 #  6 - edit next command from histo
 #  7 - autocomplete current command word
-proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {tok_rex {\[|[^[\s]+}} {histo ""} {cmds ""}} {
+proc read_sync {{prompt "> "} {histo ""} {cmds ""} {exit_cmd "exit"} {tok_rex {\[|[^[\s]+}} {kbindings_ ""}} {
 	set input [list]
 	set csiseq_data ""
 	set cmd ""
@@ -455,6 +455,12 @@ proc read_sync {kbindings {prompt "> "} {exit_cmd "exit"} {tok_rex {\[|[^[\s]+}}
 	#  4 - waiting char/seq (consume user input)
 	#  100 - finish
 	set state 0
+
+	if {[dict size $kbindings_] == 0} {
+		variable kbindings
+	} else {
+		set kbindings $kbindings_
+	}
 
 	while {$state != 100} {
 		switch $state {
