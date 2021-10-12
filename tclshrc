@@ -15,7 +15,8 @@ proc cmd_loop {} {
 	set term_prms_raw [readcmd::term_get_prms]
 
 	while {$is_running} {
-		set cmd [readcmd::read_sync $prompt $cmds_hist $cmds "exit" {\[|\]|\$|[^][\$\s]+}]
+		set cmd [readcmd::read_sync [subst $prompt] $cmds_hist $cmds \
+		  "exit" {\[|\]|\$|[^][\$\s]+}]
 		puts ""
 		if {($cmd ne "") && ($cmd ne "exit")} {
 			lappend cmds_hist $cmd
@@ -126,7 +127,7 @@ proc autocomp {toks ttc} {
 if {$::tcl_interactive} {
 	set hist_fname "~/.tclsh_history"
 	set hist_size 1000
-	set prompt "\x1b\[01;34mTCL>\x1b\[0m "
+	set prompt "\x1b\\\[01;34mTCL\[clock format \[clock seconds\] -format (%H:%M)\]>\x1b\\\[0m "
 
 	lappend auto_path ~/work/libs/tcl
 	package require readcmd
