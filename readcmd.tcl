@@ -437,7 +437,7 @@ dict set kbindings "\x09" [namespace current]::rcmd_word_autocomplete
 #  5 - edit prev command from histo
 #  6 - edit next command from histo
 #  7 - autocomplete current command word
-proc read_sync {{prompt "> "} {histo ""} {cmds ""} {exit_cmd "exit"} {tok_rex {\[|[^[\s]+}} {kbindings_ ""}} {
+proc read_sync {{prompt "> "} {histo ""} {cmds ""} {exit_cmd "exit"} {tok_rex {[^[\s]+}} {kbindings_ ""}} {
 	set input [list]
 	set csiseq_data ""
 	set cmd ""
