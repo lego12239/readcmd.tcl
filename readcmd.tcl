@@ -7,7 +7,7 @@
 package provide readcmd 0.9
 
 namespace eval readcmd {
-variable dbg_file ""
+variable dbg_fname ""
 variable dbg_chan ""
 variable stty_bin "/bin/stty"
 variable kbindings [dict create]
@@ -765,5 +765,5 @@ proc _str_insert {str pos text} {
 	return [string replace $str $pos $pos "$text[string index $str $pos]"]
 }
 
-dbg_init $dbg_file
+dbg_init $dbg_fname
 }
