@@ -1,0 +1,4 @@
+namespace eval [namespace current] {
+set stty_path "/usr/local/bin/stty"
+dict unset kbindings "\x09"
+}
