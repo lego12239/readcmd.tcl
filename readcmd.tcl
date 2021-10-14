@@ -9,7 +9,7 @@ package provide readcmd 0.9
 namespace eval readcmd {
 variable dbg_fname ""
 variable dbg_chan ""
-variable stty_bin "/bin/stty"
+variable stty_path "/bin/stty"
 variable kbindings [dict create]
 
 
@@ -41,7 +41,7 @@ proc dbg_out {msg} {
 # passed to term_unset_raw proc.
 proc term_set_raw {} {
 	set term_prms [term_get_prms]
-	exec [set [namespace current]::stty_bin] raw -echo <@stdin
+	exec [set [namespace current]::stty_path] raw -echo <@stdin
 	return $term_prms
 }
 
@@ -54,7 +54,7 @@ proc term_unset_raw {{prms ""}} {
 	if {$prms ne ""} {
 		term_set_prms $prms
 	} else {
-		exec [set [namespace current]::stty_bin] -raw echo pass8 <@stdin
+		exec [set [namespace current]::stty_path] -raw echo pass8 <@stdin
 	}
 }
 
