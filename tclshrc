@@ -129,6 +129,7 @@ if {$::tcl_interactive} {
 	set hist_size 1000
 	set prompt "\x1b\\\[01;34mTCL\[clock format \[clock seconds\] -format (%H:%M)\]>\x1b\\\[0m "
 
+	# A local lib location
 	lappend auto_path ~/work/libs/tcl
 	package require readcmd
 

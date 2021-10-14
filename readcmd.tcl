@@ -429,6 +429,24 @@ dict set kbindings "\x1b\x5b\x42" [namespace current]::rcmd_histo_next
 # tab
 dict set kbindings "\x09" [namespace current]::rcmd_word_autocomplete
 
+# Get a command from a user
+# args:
+#  prompt    - a command prompt
+#  histo     - a list with previously entered commands(first is the oldest
+#              command, last is the most recent command)
+#  cmds      - a dict with available commands, where key is command name
+#              and value is a dict with subcommands and so on.
+#              If a value dict contain a key " " with "descr" subkey, then
+#              it's used as description of a command in a list of possible
+#              completions which is showed to a user on tab key(by default).
+#              If a value dict contain a key " " with "acl_hdlr" subkey, then,
+#              it's used as autocompletion list handler which should return
+#              a list of possible completions.
+#  exit_cmd  - a command which will be returned when a key handler returns
+#              3(by default on ctrl-d press)
+#  tok_rex   - a regular expression for token matching
+#  kbindings - a dict with a key sequence mapping to handlers
+#
 # return codes for key handlers:
 #  0 - do nothing
 #  1 - command editing is done(return)
