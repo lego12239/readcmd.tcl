@@ -1,15 +1,8 @@
-2. reorder args for read_sync proc; may be: prompt, histo, cmds, exit_cmd, kbindings
-3. add reading a conf for readcmd lib($::env(HOME)/.readcmdrc)? I think, just one thing
-  need to be placed there - a configuration of readcmd::kbindings. Everything else should
-  be placed in a config of a program that use readcmd lib
-4. place stty path to conf?
-5. place debug switch into conf?
 6. add chan arg to term_set_raw and term_unset_raw?
 7. add read_async proc
 12. add multiline support
 13. add key sequence support(e.g. ctrl-x + tab to insert tab)
 14. add chan arg to read_sync?
-15. improve README
 16. tclshrc: create second variant of tclshrc where external commands(from OS, like ls, mkdir, etc) will work
 17. tclshrc: add interp alias for history command that list previous commands
 18. tclshrc: add support for call previous command with bash-like syntax !CMD_INDEX
@@ -19,5 +12,3 @@
 22. allow _acl_hdlr contain not only proc name, but proc args too.
 23. term_unset_raw(): do term_set_prms if $prms is not empty and after this do
   stty -raw echo pass8?
-24. rework autocompletion. We can't use _descr, _ and _acl_hdlr, because, for example,
-  in tclshrc variables can start with _ char and we should handle they too.
