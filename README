@@ -1,0 +1,109 @@
+A command line editing library.
+
+
+Overview
+========
+
+readcmd package contains the next routines:
+
+- readcmd::term_set_raw  - to switch a terminal to a raw mode
+- readcmd::term_unset_raw  - to switch a terminal to a normal mode
+- readcmd::term_get_prms  - to get terminal parameters
+- readcmd::term_set_prms  - to set terminal parameters
+- readcmd::read_sync  - to read a command line
+
+
+Synopsis
+========
+
+  readcmd::term_set_raw
+  readcmd::term_unset_raw [PRMS]
+  readcmd::term_get_prms
+  readcmd::term_set_prms [PRMS]
+  readcmd::read_sync [PROMPT] [HISTO] [CMDS] [EXIT_CMD] [TOKEN_REGEXP] [KBINDINGS]
+
+
+Description
+===========
+
+The main work is done by readcmd::read_sync proc. But before they start,
+a terminal should be switched in a raw mode. This can be done with
+readcmd::term_set_raw proc and can be reverted back with
+readcmd::term_unset_raw proc(or with readcmd::term_set_prms proc).
+
+After read_sync proc is started it get a terminal dimensions(rows and columns counts) and a cursor position with help of ascii control sequences;
+after that it read characters entered by a user.
+
+readcmd::read_sync arguments:
+  prompt    - a command prompt
+  histo     - a list with previously entered commands(first is the oldest
+              command, last is the most recent command)
+  cmds      - a dict with available commands, where key is command name
+              and value is a dict with subcommands and so on.
+              If a value dict contain a key " " with "descr" subkey, then
+              it's used as description of a command in a list of possible
+              completions which is showed to a user on tab key(by default).
+              If a value dict contain a key " " with "acl_hdlr" subkey, then,
+              it's used as autocompletion list handler which should return
+              a list of possible completions.
+  exit_cmd  - a command which will be returned when a key handler returns
+              3(by default on ctrl-d press)
+  tok_rex   - a regular expression for token matching
+  kbindings - a dict with a key sequence mapping to handlers
+
+cmds dict example from ex.tcl:
+
+namespace eval mod_version {
+proc cmd_show_ver {args} {
+	puts "0.2"
+}
+}
+dict set cmds show " " descr "show info"
+dict set cmds show version " " hdlr ::mod_version::cmd_show_ver
+dict set cmds show version " " descr "show program version"
+
+Keys bindings is a dict where each key represents a character ascii code or
+ascii codes sequence of a ascii control sequence(for CSI sequence this
+sequence should include only CSI and final byte without parameter and
+intermediate bytes - e.g. "\x1b\x5b\x7e" for delete ascii control sequence,
+where full CSI sequence is "\x1b\x5b\x33\x7e" where \x33 is a parameter
+byte). See readcmd::kbindings dict in readcmd.tcl.
+
+On package loading (i.e. sourcing readcmd.tcl) readcmd try to load
+a configuration from files specified in readcmd::conf_fname variable.
+The first existent file will be loaded with help of source command.
+By default, it contains "$::env(HOME)/.readcmd.conf /etc/readcmd.conf".
+See example conf in readcmd.conf.example file.
+
+Input is read by one character. If we got ascii ESC(\x1b ascii code), then
+we read the next character. If it is not ascii [ (\x5b ascii code),
+then we done with an ascii escape sequence; if it is ascii [,
+then we've read CSI sequence and must read every character until we
+got a CSI sequence final byte.
+
+Autocompletion is automatic for commands names from cmds dict (this is
+done by readcmd::_acl_gen_from_dict proc).
+But we can set autocompletion for command parameters. Autocompletion
+handler is specified with acl_hdlr subkey in " " key of cmd dict.
+This handler should accept a completed tokens list as a first argument;
+and an uncompleted token as a second argument. It is not guaranteed that
+it is uncompleted token, but we think so because a cursor is right after
+it. This handler must return a list of possible completions that
+will be shown to a user as is. No processing is applied to it.
+readcmd lib detect a common prefix of every tokens from the list
+returned by a handler. Then lib remove an uncompleted token from
+the start of this detected common prefix(if an uncompleted token
+is a prefix of a common prefix for the list). Then this string will
+be a detected completion suffix.
+
+
+Examples
+========
+
+see ex.tcl and tclshrc for examples.
+
+
+Sponsors
+========
+
+Z-Wave.Me
