@@ -10,6 +10,7 @@ namespace eval readcmd {
 variable dbg_fname ""
 variable dbg_chan ""
 variable stty_path "/bin/stty"
+variable conf_fname "$::env(HOME)/.readcmd.conf /etc/readcmd.conf"
 variable kbindings [dict create]
 
 
@@ -765,5 +766,17 @@ proc _str_insert {str pos text} {
 	return [string replace $str $pos $pos "$text[string index $str $pos]"]
 }
 
+proc conf_load {} {
+	variable conf_fname
+
+	foreach fname $conf_fname {
+		if {[file exists $fname]} {
+			source $fname
+			break
+		}
+	}
+}
+
+conf_load
 dbg_init $dbg_fname
 }
