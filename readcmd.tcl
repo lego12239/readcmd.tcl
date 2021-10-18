@@ -770,10 +770,6 @@ proc _acl_gen_from_dict {cmdhier ttc} {
 	return $wl
 }
 
-proc _split {str} {
-	apply {args { return $args; }} {*}$str;
-}
-
 # M+N as pos isn't supported(only single integer).
 proc _str_insert {str pos text} {
 	if {$pos <= 0} {
