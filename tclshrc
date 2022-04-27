@@ -25,13 +25,18 @@ proc cmd_loop {} {
 			set is_running 0
 		} else {
 			readcmd::term_set_prms $term_prms_orig
-			if {[catch {$sandbox eval $cmd} res]} {
+			# Quotes and semicolon are here only to suppress a convertion
+			# of cmd to bytecode where a refcount of variable
+			# that embedded in cmd is incremented.
+			if {[catch {$sandbox eval "$cmd;"} res]} {
 				puts $::errorInfo
 			} else {
 				if {$res ne ""} {
 					puts $res
 				}
 			}
+			# To decr refcount for the result.
+			unset -nocomplain res
 			readcmd::term_set_prms $term_prms_raw
 		}
 
