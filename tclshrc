@@ -109,6 +109,16 @@ proc autocomp {toks ttc} {
 		foreach i [lsort [$sandbox eval [list info vars "${pattern}*"]]] {
 			lappend ret [list "$i " ""]
 		}
+	} elseif {([string index $ttc 0] eq "/") ||
+	          ([string equal -length 2 $ttc "./"])} {
+		set pattern [string map {* \\* ? \\? [ \\[ ] \\] \\ \\\\} $ttc]
+		foreach i [lsort [$sandbox eval [list glob -nocomplain "${pattern}*"]]] {
+			if {[$sandbox eval [list file isdirectory $i]]} {
+				lappend ret [list "$i/" ""]
+			} else {
+				lappend ret [list "$i " ""]
+			}
+		}
 	}
 	if {[string equal -length 2 :: $ttc]} {
 		set idx [string last : $ttc]
